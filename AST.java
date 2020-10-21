@@ -119,7 +119,18 @@ class Start extends AST{
 
     }
     public Type check(Environment env, FunEnvironment fenv){
-	return null;
+        for(Fun f:funs){
+            Environment newenv=new Environment();
+            for(TypedIdent ti:f.parameters){
+                if (ti.valuetype==Type.INTTYPE)
+                    newenv.setVariable(ti.ident,new IntValue(0));
+                else
+                    newenv.setVariable(ti.ident,new BoolValue(false));
+            }
+            Type t=f.e.check(newenv,fenv);
+            if (t!=f.typeid.valuetype) faux.error("Wrong return type.");
+        }
+        return e.check(env,fenv);
     }
 }
 
@@ -138,7 +149,7 @@ class Constant extends Expr{
     }
     public Type check(Environment env, FunEnvironment fenv){
 
-        return null;
+        return v.valuetype();
     }
 }
 
@@ -150,7 +161,8 @@ class Variable extends Expr{
         return env.getVariable(varname);
     }
     public Type check(Environment env, FunEnvironment fenv){
-	return null;
+        // TODO: Complete the implementation of the function
+        return null;
     }
 }
 
@@ -169,7 +181,8 @@ class Addition extends Expr{
     }
 
     public Type check(Environment env, FunEnvironment fenv){
-	return null;
+        // TODO: Complete the implementation of the function
+        return null;
     }
 }
 
@@ -186,7 +199,8 @@ class Multiplication extends Expr{
         return new IntValue(v1.intvalue() * v2.intvalue());
     }
     public Type check(Environment env, FunEnvironment fenv){
-	return null;
+        // TODO: Complete the implementation of the function
+        return null;
     }
 }
 
@@ -210,7 +224,8 @@ class Comparison extends Expr{
     }
 
     public Type check(Environment env, FunEnvironment fenv){
-	return null;
+        // TODO: Complete the implementation of the function
+        return null;
     }
 }
 
@@ -228,7 +243,8 @@ class Conditional extends Expr{
             return e2.eval(env,fenv);
     }
     public Type check(Environment env, FunEnvironment fenv){
-	return null;
+        // TODO: Complete the implementation of the function
+        return null;
     }
 }
 
@@ -256,7 +272,8 @@ class FunctionCall extends Expr{
 
     }
     public Type check(Environment env, FunEnvironment fenv){
-	return null;
+        // TODO: Complete the implementation of the function
+        return null;
     }
 }
 
