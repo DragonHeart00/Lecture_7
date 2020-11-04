@@ -127,8 +127,9 @@ class Start extends AST{
                 else
                     newenv.setVariable(ti.ident,new BoolValue(false));
             }
-            Type t=f.e.check(newenv,fenv);
-            if (t!=f.typeid.valuetype) faux.error("Wrong return type.");
+           //check if value type is int
+            if(f.e.check(newenv,fenv)!=f.typeid.valuetype)
+                faux.error("Wrong return type.");
         }
         return e.check(env,fenv);
     }
@@ -148,7 +149,7 @@ class Constant extends Expr{
         return v;
     }
     public Type check(Environment env, FunEnvironment fenv){
-
+        //check if return value v
         return v.valuetype();
     }
 }
@@ -161,8 +162,8 @@ class Variable extends Expr{
         return env.getVariable(varname);
     }
     public Type check(Environment env, FunEnvironment fenv){
-        // TODO: Complete the implementation of the function
-        return null;
+        return env.getVariable(varname).valuetype();
+
     }
 }
 
@@ -173,16 +174,15 @@ class Addition extends Expr{
 
         Value v1= e1.eval(env,fenv);
         Value v2= e2.eval(env,fenv);
-
-        if (v1.valuetype()!=Type.INTTYPE || v2.valuetype()!=Type.INTTYPE)
-            faux.error("Addition must be of integers");
-
         return new IntValue(v1.intvalue() + v2.intvalue());
     }
 
     public Type check(Environment env, FunEnvironment fenv){
-        // TODO: Complete the implementation of the function
-        return null;
+        Type type1 = e1.check(env, fenv);
+        Type type2 = e2.check(env, fenv);
+        if (type1!=Type.INTTYPE || type2!=Type.INTTYPE)
+            faux.error("Addition of non-integers");
+        return Type.INTTYPE;
     }
 }
 
@@ -193,14 +193,14 @@ class Multiplication extends Expr{
         Value v1= e1.eval(env,fenv);
         Value v2= e2.eval(env,fenv);
 
-        if (v1.valuetype()!=Type.INTTYPE || v2.valuetype()!=Type.INTTYPE)
-            faux.error("Multiplication must be of integers");
-
         return new IntValue(v1.intvalue() * v2.intvalue());
     }
     public Type check(Environment env, FunEnvironment fenv){
-        // TODO: Complete the implementation of the function
-        return null;
+        Type type1 = e1.check(env, fenv);
+        Type type2 = e2.check(env, fenv);
+        if (type1!=Type.INTTYPE || type2!=Type.INTTYPE)
+            faux.error("Multiplication of non-integers");
+        return Type.INTTYPE;
     }
 }
 
@@ -211,10 +211,6 @@ class Comparison extends Expr{
         Value v1= e1.eval(env,fenv);
         Value v2= e2.eval(env,fenv);
         Type t1 = v1.valuetype();
-        Type t2 = v2.valuetype();
-
-        if (t1!=t2)
-            faux.error("Comparison must be of same type");
 
         if (t1==Type.INTTYPE)
             return new BoolValue(v1.intvalue() == v2.intvalue());
@@ -224,8 +220,11 @@ class Comparison extends Expr{
     }
 
     public Type check(Environment env, FunEnvironment fenv){
-        // TODO: Complete the implementation of the function
-        return null;
+        Type type1 =e1.check(env, fenv);
+        Type type2 =e2.check(env, fenv);
+        if (type1!=type2)
+            faux.error("Comparison must be of same type");
+        return Type.BOOLTYPE;
     }
 }
 
@@ -234,17 +233,21 @@ class Conditional extends Expr{
     Conditional(Expr cond, Expr e1, Expr e2){ this.cond=cond; this.e1=e1; this.e2=e2; }
     public Value eval(Environment env, FunEnvironment fenv){
         Value c = cond.eval(env,fenv);
-
-        if (c.valuetype()!=Type.BOOLTYPE)
-            faux.error("Condition is not a boolean");
         if (c.boolvalue())
             return e1.eval(env,fenv);
         else
             return e2.eval(env,fenv);
     }
     public Type check(Environment env, FunEnvironment fenv){
-        // TODO: Complete the implementation of the function
-        return null;
+        Type type=cond.check(env, fenv);
+        if (type!=Type.BOOLTYPE){
+            faux.error("Condition is not a boolean");
+        }
+        Type type1=e1.check(env, fenv);
+        Type type2=e2.check(env, fenv);
+        if (type1!=type2)
+            faux.error("if has different return type");
+        return type1;
     }
 }
 
@@ -256,24 +259,27 @@ class FunctionCall extends Expr{
         this.parameters=parameters;
     }
     public Value eval(Environment env, FunEnvironment fenv){
-        Fun fdef=fenv.getFunction(fname);
-
-        if(fdef.parameters.size()!=parameters.size())
-            faux.error("Wrong number of parameters");
-
-        Environment newenv = new Environment();
+        Fun fun=fenv.getFunction(fname);
+        Environment newEnvironment = new Environment();
         for(int i=0; i<parameters.size(); i++){
             Value v=parameters.get(i).eval(env,fenv);
-            if (v.valuetype()!=fdef.parameters.get(i).valuetype)
-                faux.error("Wrong type of parameter");
-            newenv.setVariable(fdef.parameters.get(i).ident,v);
+            TypedIdent typedIdent = fun.parameters.get(i);
+            newEnvironment.setVariable(typedIdent.ident,v);
         }
-        return fdef.e.eval(newenv,fenv);
+        return fun.e.eval(newEnvironment,fenv);
 
     }
     public Type check(Environment env, FunEnvironment fenv){
-        // TODO: Complete the implementation of the function
-        return null;
+        Fun fun = fenv.getFunction(fname);
+        if (fun.parameters.size()!=parameters.size())
+        faux.error("Wrong number of parameters");
+        for (int i = 0; i < parameters.size(); i++) {
+            Type type = parameters.get(i).check(env, fenv);
+            TypedIdent typedIdent = fun.parameters.get(i);
+            if (type!=typedIdent.valuetype)
+                faux.error("Wrong type of parameter");
+        }
+        return fun.typeid.valuetype;
     }
 }
 
