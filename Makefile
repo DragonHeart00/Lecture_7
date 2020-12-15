@@ -1,4 +1,4 @@
-antlr4 = java -jar /usr/local/lib/antlr-4.8-complete.jar
+antlr4 = java -jar /usr/local/lib/antlr-4.9-complete.jar
 SRCFILES = main.java AST.java
 GENERATED = interpreterListener.java interpreterBaseListener.java interpreterParser.java interpreterBaseVisitor.java interpreterVisitor.java interpreterLexer.java
 

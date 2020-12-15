@@ -41,7 +41,7 @@ public class main {
 	ASTMaker astmaker = new ASTMaker();
 	AST ast=astmaker.visit(parseTree);
 
-	System.out.println("The result is: "+ast.eval(new Environment(), new FunEnvironment()));
+	System.out.println("\nThe result is: "+ast.eval(new Environment(), new FunEnvironment()));
     }
 }
 
